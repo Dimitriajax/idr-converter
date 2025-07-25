@@ -57,7 +57,7 @@ def getWritting(number: int):
         if (amount == 0): continue
 
         if (amount < 20): 
-            if (index == 1000000 or index == 1000):
+            if (index == 1000000 or index == 1000 or index == 100):
                 string += f"{IndonesianNumber(amount).name} {IndonesianNumberBases(index).name} "
                 continue
 
