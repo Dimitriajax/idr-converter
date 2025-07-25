@@ -1,15 +1,16 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 import re
 from app.enums import Convert, IndonesianNumber, IndonesianNumberBases
+from app.model import ConvertModel  
 
 app = FastAPI()
 
 @app.get("/convert")
-async def read_root(idr: str = '', suffix: str = ''):
-    number = int(idr)
+async def read_root(params: ConvertModel = Depends()):
+    number = params.idr
     
-    if (suffix):
-        number = (number * getattr(IndonesianNumberBases, suffix).value)
+    if (params.suffix):
+        number = (number * getattr(IndonesianNumberBases, params.suffix).value)
 
     writting = getWritting(number)
 
