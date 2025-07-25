@@ -16,10 +16,10 @@ async def read_root(params: ConvertModel = Depends()):
 
     return {
         "currency": 'IDR',
-        "amount": number, 
-        "writting": f"{writting} ruppiah",
+        "amount": f"{number:,}", 
+        "writting": f"{writting} rupiah",
         "convert": {
-            "eu": round((number / Convert.eu), 2),
+            "eur": round((number / Convert.eu), 2),
             "usd": round((number / Convert.usd), 2)
         }
     }
@@ -58,7 +58,7 @@ def getWritting(number: int):
 
         if (amount < 20): 
             if (index == 1000000 or index == 1000):
-                string += f"{IndonesianNumber(amount).name} {IndonesianNumberBases(index).name}"
+                string += f"{IndonesianNumber(amount).name} {IndonesianNumberBases(index).name} "
                 continue
 
             if (index == 10):
