@@ -1,15 +1,19 @@
-from fastapi import FastAPI, Depends
-from app.enums import Convert, IndonesianNumber, IndonesianNumberBases
-from app.model import ConvertModel  
+from fastapi import APIRouter, Depends
+from app.types.enums import Convert, IndonesianNumber, IndonesianNumberBase
+from app.types.models import ConvertModel  
+from app.types.responses import ConvertResponse
 
-app = FastAPI()
+router = APIRouter(
+    prefix="/converter",
+    tags=["converter"],
+)
 
-@app.get("/convert")
-async def read_root(params: ConvertModel = Depends()):
+@router.get('', response_model=ConvertResponse)
+async def read_converter(params: ConvertModel = Depends()): 
     number = params.idr
     
     if (params.suffix):
-        number = (number * getattr(IndonesianNumberBases, params.suffix).value)
+        number = (number * getattr(IndonesianNumberBase, params.suffix).value)
 
     writting = get_writting(number)
 
@@ -23,7 +27,7 @@ async def read_root(params: ConvertModel = Depends()):
         }
     }
 
-def get_writting(number: int):
+def get_writting(number: int) -> str:
     if number < 20:
         return IndonesianNumber(number).name
 
@@ -40,11 +44,11 @@ def get_writting(number: int):
     }
 
     for index, num in enumerate(devide):
-        if (numberLeft <= 0): break
+        if numberLeft <= 0: break
 
         sum = (numberLeft - num)
 
-        if (sum < 0): continue
+        if sum < 0: continue
 
         while (numberLeft >= num):
             numberLeft -= num
@@ -53,35 +57,35 @@ def get_writting(number: int):
     string = ''
 
     for index, amount in results.items(): 
-        if (amount == 0): continue
+        if amount == 0: continue
 
-        if (amount < 20): 
-            if (index == 1000000 or index == 1000 or index == 100):
-                string += f"{IndonesianNumber(amount).name} {IndonesianNumberBases(index).name} "
+        if amount < 20: 
+            if index == 1000000 or index == 1000 or index == 100:
+                string += f"{IndonesianNumber(amount).name} {IndonesianNumberBase(index).name} "
                 continue
 
-            if (index == 10):
+            if index == 10:
                 sum = ((amount * 10) + results[1])
                 string += f"{get_writting_of_base(sum)}"
                 break
 
-            if (amount == 1):
+            if amount == 1:
                 sum = (amount + (results[10] * 10))
 
                 string += f"{get_writting_of_base(sum)}"
                 break
             else:
-                if (index == 1):
+                if index == 1:
                     string += f"{IndonesianNumber(amount).name}"
                 else:
-                    string += f"{IndonesianNumber(amount).name} {IndonesianNumberBases(index).name} "
+                    string += f"{IndonesianNumber(amount).name} {IndonesianNumberBase(index).name} "
         else:
-            string += f"{get_writting_of_base(amount)}{IndonesianNumberBases(index).name} "
+            string += f"{get_writting_of_base(amount)}{IndonesianNumberBase(index).name} "
 
     return string.rstrip()
 
-def get_writting_of_base(amount):
-    if (amount < 19):
+def get_writting_of_base(amount) -> str:
+    if amount < 19:
         return f"{IndonesianNumber(amount).name}"
 
     listOfDigits = [int(i) for i in str(amount)]
@@ -97,22 +101,18 @@ def get_writting_of_base(amount):
         else:
             string += f"{IndonesianNumber(digit).name} "
 
-        if (index == 0 and length == 2): 
-            string += f"{IndonesianNumberBases(10).name} "
-        if (length == 3): 
-            if (index == 0):
-                string += f"{IndonesianNumberBases(100).name} "
-            if (index == 1):
+        if index == 0 and length == 2: 
+            string += f"{IndonesianNumberBase(10).name} "
+        if length == 3: 
+            if index == 0:
+                string += f"{IndonesianNumberBase(100).name} "
+            if index == 1:
                 sum = ((listOfDigits[1] * 10) + listOfDigits[2])
 
                 if (sum < 19): 
                     string += f"{IndonesianNumber(sum).name} "
                     break
 
-                string += f"{IndonesianNumber(digit).name} {IndonesianNumberBases(10).name} "
+                string += f"{IndonesianNumber(digit).name} {IndonesianNumberBase(10).name} "
 
     return string
-
-
-    
-

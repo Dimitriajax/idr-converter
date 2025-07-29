@@ -21,15 +21,4 @@ class IndonesianNumber(IntEnum):
     delapan_belas = 18
     sembilan_belas = 19
 
-class IndonesianNumberBases(IntEnum):
-    se = 1
-    puluh = 10
-    ratus = 100
-    ribu = 1000
-    juta = 1000000
-    miliar = 1000000000
-
-class Convert(IntEnum): 
-    eu = 19000
-    usd = 16000
 
