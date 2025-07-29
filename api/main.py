@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Depends
-import re
 from app.enums import Convert, IndonesianNumber, IndonesianNumberBases
 from app.model import ConvertModel  
 
@@ -12,7 +11,7 @@ async def read_root(params: ConvertModel = Depends()):
     if (params.suffix):
         number = (number * getattr(IndonesianNumberBases, params.suffix).value)
 
-    writting = getWritting(number)
+    writting = get_writting(number)
 
     return {
         "currency": 'IDR',
@@ -24,7 +23,7 @@ async def read_root(params: ConvertModel = Depends()):
         }
     }
 
-def getWritting(number: int):
+def get_writting(number: int):
     if number < 20:
         return IndonesianNumber(number).name
 
@@ -63,13 +62,13 @@ def getWritting(number: int):
 
             if (index == 10):
                 sum = ((amount * 10) + results[1])
-                string += f"{getWrittingOfBase(sum)}"
+                string += f"{get_writting_of_base(sum)}"
                 break
 
             if (amount == 1):
                 sum = (amount + (results[10] * 10))
 
-                string += f"{getWrittingOfBase(sum)}"
+                string += f"{get_writting_of_base(sum)}"
                 break
             else:
                 if (index == 1):
@@ -77,11 +76,11 @@ def getWritting(number: int):
                 else:
                     string += f"{IndonesianNumber(amount).name} {IndonesianNumberBases(index).name} "
         else:
-            string += f"{getWrittingOfBase(amount)}{IndonesianNumberBases(index).name} "
+            string += f"{get_writting_of_base(amount)}{IndonesianNumberBases(index).name} "
 
     return string.rstrip()
 
-def getWrittingOfBase(amount):
+def get_writting_of_base(amount):
     if (amount < 19):
         return f"{IndonesianNumber(amount).name}"
 
