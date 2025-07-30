@@ -63,7 +63,7 @@ def get_writting(number: int) -> str:
         if amount < 20:
             if index not in (1, 10):
                 if index in (1000000, 1000, 100) and amount == 1:
-                    string += f"{IndonesianNumberBase(1).name}{IndonesianNumberBase(index).name}"
+                    string += f"{IndonesianNumberBase(1).name}{IndonesianNumberBase(index).name} "
                     continue
                 else:
                     string += f"{IndonesianNumber(amount).name} {IndonesianNumberBase(index).name} "
@@ -98,13 +98,15 @@ def get_writting_of_base(amount) -> str:
 
     string = ''
 
+    print(listOfDigits)
+
     for index, digit in enumerate(listOfDigits):
         if (digit == 0): continue
 
         if (length == 3 and index == 1):
             print('hello')
         else:
-            if digit == 1:
+            if digit == 1 and length > 2:
                 string += f"{IndonesianNumberBase(1).name}"
             else:
                 string += f"{IndonesianNumber(digit).name} "
