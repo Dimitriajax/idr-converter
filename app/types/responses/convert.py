@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 class ConvertedCurrencies(BaseModel):
-    eur: int
-    usd: int
+    eur: float
+    usd: float
 
 class ConvertResponse(BaseModel):
     currency: str

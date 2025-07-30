@@ -19,7 +19,7 @@ async def read_converter(params: ConvertModel = Depends()):
 
     return {
         "currency": 'IDR',
-        "amount": f"{number:,}", 
+        "amount": number, 
         "writting": f"{writting} rupiah",
         "convert": {
             "eur": round((number / Convert.eu), 2),
@@ -31,11 +31,12 @@ def get_writting(number: int) -> str:
     if number < 20:
         return IndonesianNumber(number).name
 
-    devide = [1000000, 1000, 100, 10, 1]
+    devide = [1000000000, 1000000, 1000, 100, 10, 1]
 
     numberLeft = number
 
     results = {
+        1000000000: 0,
         1000000: 0,
         1000: 0,
         100: 0,
@@ -59,10 +60,14 @@ def get_writting(number: int) -> str:
     for index, amount in results.items(): 
         if amount == 0: continue
 
-        if amount < 20: 
-            if index == 1000000 or index == 1000 or index == 100:
-                string += f"{IndonesianNumber(amount).name} {IndonesianNumberBase(index).name} "
-                continue
+        if amount < 20:
+            if index not in (1, 10):
+                if index in (1000000, 1000, 100) and amount == 1:
+                    string += f"{IndonesianNumberBase(1).name}{IndonesianNumberBase(index).name}"
+                    continue
+                else:
+                    string += f"{IndonesianNumber(amount).name} {IndonesianNumberBase(index).name} "
+                    continue
 
             if index == 10:
                 sum = ((amount * 10) + results[1])
@@ -99,7 +104,10 @@ def get_writting_of_base(amount) -> str:
         if (length == 3 and index == 1):
             print('hello')
         else:
-            string += f"{IndonesianNumber(digit).name} "
+            if digit == 1:
+                string += f"{IndonesianNumberBase(1).name}"
+            else:
+                string += f"{IndonesianNumber(digit).name} "
 
         if index == 0 and length == 2: 
             string += f"{IndonesianNumberBase(10).name} "
