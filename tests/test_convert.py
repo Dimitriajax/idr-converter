@@ -33,6 +33,7 @@ def get_response(idr: int, suffix: str = None)-> httpx.Response:
     (11030, "sebelas ribu tiga puluh rupiah"),
     (10500, "sepuluh ribu lima ratus rupiah"),
     (100000, "seratus ribu rupiah"),
+    (104310, "seratus empat ribu tiga ratus sepuluh rupiah"),
 ])
 
 def test_idr_writting_output(idr: int, expected: str) -> None:

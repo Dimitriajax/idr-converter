@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.types.enums import Convert, IndonesianNumber, IndonesianNumberBase
 from app.types.models import ConvertModel  
 from app.types.responses import ConvertResponse
@@ -14,6 +14,12 @@ async def read_converter(params: ConvertModel = Depends()):
     
     if (params.suffix):
         number = (number * getattr(IndonesianNumberBase, params.suffix).value)
+
+    if number >= 1000000000000:
+          raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Number too big. Maximum allowed is below 1 triliun IDR."
+        )
 
     writting = get_writting(number)
 
@@ -33,7 +39,7 @@ def get_writting(number: int) -> str:
 
     devide = [1000000000, 1000000, 1000, 100, 10, 1]
 
-    numberLeft = number
+    number_left = number
 
     results = {
         1000000000: 0,
@@ -45,14 +51,14 @@ def get_writting(number: int) -> str:
     }
 
     for index, num in enumerate(devide):
-        if numberLeft <= 0: break
+        if number_left <= 0: break
 
-        sum = (numberLeft - num)
+        sum = (number_left - num)
 
         if sum < 0: continue
 
-        while (numberLeft >= num):
-            numberLeft -= num
+        while (number_left >= num):
+            number_left -= num
             results[num] += 1
 
     string = ''
@@ -66,7 +72,7 @@ def get_writting(number: int) -> str:
                     string += f"{IndonesianNumberBase(1).name}{IndonesianNumberBase(index).name} "
                     continue
                 else:
-                    string += f"{IndonesianNumber(amount).name} {IndonesianNumberBase(index).name} "
+                    string += f"{IndonesianNumber(amount).name.replace("_", " ")} {IndonesianNumberBase(index).name} "
                     continue
 
             if index == 10:
@@ -91,20 +97,18 @@ def get_writting(number: int) -> str:
 
 def get_writting_of_base(amount) -> str:
     if amount < 19:
-        return f"{IndonesianNumber(amount).name}"
+        return f"{IndonesianNumber(amount).name.replace("_", " ")}"
 
-    listOfDigits = [int(i) for i in str(amount)]
-    length = len(listOfDigits)
+    list_of_digits = [int(i) for i in str(amount)]
+    length = len(list_of_digits)
 
     string = ''
 
-    print(listOfDigits)
-
-    for index, digit in enumerate(listOfDigits):
+    for index, digit in enumerate(list_of_digits):
         if (digit == 0): continue
 
         if (length == 3 and index == 1):
-            print('hello')
+            print()
         else:
             if digit == 1 and length > 2:
                 string += f"{IndonesianNumberBase(1).name}"
@@ -117,7 +121,7 @@ def get_writting_of_base(amount) -> str:
             if index == 0:
                 string += f"{IndonesianNumberBase(100).name} "
             if index == 1:
-                sum = ((listOfDigits[1] * 10) + listOfDigits[2])
+                sum = ((list_of_digits[1] * 10) + list_of_digits[2])
 
                 if (sum < 19): 
                     string += f"{IndonesianNumber(sum).name} "
