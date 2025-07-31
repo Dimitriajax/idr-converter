@@ -4,3 +4,6 @@ from typing import Optional, Literal
 class ConvertModel(BaseModel): 
     idr: int
     suffix: Optional[Literal['ribu', 'juta']] = None
+
+class ReverseConvertModel(BaseModel):
+    idr: str

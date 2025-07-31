@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.types.enums import Convert, IndonesianNumber, IndonesianNumberBase
-from app.types.models import ConvertModel  
+from app.types.models import ConvertModel, ReverseConvertModel
 from app.types.responses import ConvertResponse
+from app.tools.validators import validate_idr_range
 
 router = APIRouter(
     prefix="/converter",
@@ -15,11 +16,7 @@ async def read_converter(params: ConvertModel = Depends()):
     if (params.suffix):
         number = (number * getattr(IndonesianNumberBase, params.suffix).value)
 
-    if number >= 1000000000000:
-          raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Number too big. Maximum allowed is below 1 triliun IDR."
-        )
+    validate_idr_range(number)
 
     writting = get_writting(number)
 
@@ -32,6 +29,54 @@ async def read_converter(params: ConvertModel = Depends()):
             "usd": round((number / Convert.usd), 2)
         }
     }
+
+@router.get('/reverse')
+async def read_reverse_converter(params: ReverseConvertModel = Depends()):
+    splited = params.idr.split()
+
+    grouped = {}
+
+    for index, word in enumerate(splited):
+        if word in ('miliyar', 'juta', 'ratus', 'puluh'):
+            grouped[index - 1] = f"{grouped[index - 1]} {word}"            
+        else:
+            grouped[index] = word
+
+    grouped_list = list(grouped.values())
+    grouped_numbers = []
+
+    for index, word in enumerate(grouped_list):
+        splited = word.split()
+
+        if "se" in splited[0]:
+            parts = splited[0].split("se")
+            splited[0] = 1
+            splited.append(parts[1])
+            number = 1
+        else:
+            try:
+                number = getattr(IndonesianNumber, splited[0]).value
+            except:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid"
+                )
+            
+        if len(splited) > 1 and splited[1]:
+            try:
+                base = getattr(IndonesianNumberBase, splited[1]).value
+                number = number * base
+            except:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid"
+                )
+
+        grouped_numbers.append(number)
+
+    total = sum(grouped_numbers)
+
+    return total
 
 def get_writting(number: int) -> str:
     if number < 20:
@@ -124,7 +169,7 @@ def get_writting_of_base(amount) -> str:
                 sum = ((list_of_digits[1] * 10) + list_of_digits[2])
 
                 if (sum < 19): 
-                    string += f"{IndonesianNumber(sum).name} "
+                    string += f"{IndonesianNumber(sum).name.replace("_", " ")} "
                     break
 
                 string += f"{IndonesianNumber(digit).name} {IndonesianNumberBase(10).name} "
