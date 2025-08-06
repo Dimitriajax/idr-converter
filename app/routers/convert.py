@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.types.enums import Convert, IndonesianNumber, IndonesianNumberBase
 from app.types.models import ConvertModel, ReverseConvertModel
-from app.types.responses import ConvertResponse
+from app.types.responses import ConvertResponse, ReverseConvertResponse
 from app.tools.validators import validate_idr_range
 
 router = APIRouter(
@@ -10,7 +10,7 @@ router = APIRouter(
 )
 
 @router.get('', response_model=ConvertResponse)
-async def read_converter(params: ConvertModel = Depends()): 
+async def read_converter(params: ConvertModel = Depends()) -> dict: 
     number = params.idr
     
     if (params.suffix):
@@ -30,14 +30,14 @@ async def read_converter(params: ConvertModel = Depends()):
         }
     }
 
-@router.get('/reverse')
-async def read_reverse_converter(params: ReverseConvertModel = Depends()):
+@router.get('/reverse', response_model=ReverseConvertResponse)
+async def read_reverse_converter(params: ReverseConvertModel = Depends()) -> dict:
     splited = params.idr.split()
 
     grouped = {}
 
     for index, word in enumerate(splited):
-        if word in ('miliyar', 'juta', 'ratus', 'puluh'):
+        if word in ('miliar', 'juta', 'ratus', 'puluh'):
             grouped[index - 1] = f"{grouped[index - 1]} {word}"            
         else:
             grouped[index] = word
@@ -76,7 +76,13 @@ async def read_reverse_converter(params: ReverseConvertModel = Depends()):
 
     total = sum(grouped_numbers)
 
-    return total
+    return {
+        "amount": total,
+         "convert": {
+            "eur": round((total / Convert.eu), 2),
+            "usd": round((total / Convert.usd), 2)
+        }
+    }
 
 def get_writting(number: int) -> str:
     if number < 20:

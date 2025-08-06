@@ -9,3 +9,7 @@ class ConvertResponse(BaseModel):
     amount: int
     writting: str
     convert: ConvertedCurrencies
+
+class ReverseConvertResponse(BaseModel):
+    amount: int
+    convert: ConvertedCurrencies
